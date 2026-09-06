@@ -1,0 +1,7 @@
+[
+  {
+    "id": 1,
+    "query": "Sample test query for EvoRAG",
+    "expected_behavior": "Should retrieve RAG context or trigger web search if stale"
+  }
+]

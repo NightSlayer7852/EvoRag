@@ -1,0 +1,1 @@
+Classify the following web search result relative to existing context as NEW, UPDATE, DUPLICATE, CONTRADICTION, or OBSOLETE.

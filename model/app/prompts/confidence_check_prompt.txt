@@ -1,0 +1,1 @@
+Assess the confidence and staleness of the retrieved RAG context for the given query.
