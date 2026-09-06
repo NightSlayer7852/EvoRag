@@ -20,3 +20,14 @@ RECENCY_KEYWORDS = [k.strip().lower() for k in _raw_keywords.split(",") if k.str
 
 # Embedding Model Configuration
 EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2")
+
+# Web Search Configuration
+WEB_SEARCH_PROVIDER = os.getenv("WEB_SEARCH_PROVIDER", "tavily").lower()
+WEB_SEARCH_API_KEY = (
+    os.getenv("WEB_SEARCH_API_KEY")
+    or os.getenv("TAVILY_API_KEY")
+    or os.getenv("SERPAPI_API_KEY")
+    or None
+)
+WEB_SEARCH_MAX_RESULTS = int(os.getenv("WEB_SEARCH_MAX_RESULTS", "5"))
+WEB_SEARCH_SNIPPET_MAX_CHARS = int(os.getenv("WEB_SEARCH_SNIPPET_MAX_CHARS", "1000"))
