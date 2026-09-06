@@ -14,7 +14,7 @@ class ChunkStatus(str, Enum):
 class ChunkMetadata(BaseModel):
     """
     Metadata model stored alongside vector embeddings in Qdrant payload.
-    Supports chunk lineage, versioning, staleness tracking, and status transitions.
+    Supports chunk lineage, versioning, staleness tracking, status transitions, and conflict tagging.
     """
     chunk_id: str = Field(default_factory=lambda: str(uuid4()))
     content: str
@@ -25,6 +25,7 @@ class ChunkMetadata(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     supersedes: Optional[str] = None
     superseded_by: Optional[str] = None
+    conflicts_with: Optional[List[str]] = None
     tags: Optional[List[str]] = None
 
 

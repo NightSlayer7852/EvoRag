@@ -31,3 +31,16 @@ WEB_SEARCH_API_KEY = (
 )
 WEB_SEARCH_MAX_RESULTS = int(os.getenv("WEB_SEARCH_MAX_RESULTS", "5"))
 WEB_SEARCH_SNIPPET_MAX_CHARS = int(os.getenv("WEB_SEARCH_SNIPPET_MAX_CHARS", "1000"))
+
+# LLM Generation Configuration
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq").lower()
+LLM_API_KEY = (
+    os.getenv("LLM_API_KEY")
+    or os.getenv("GROQ_API_KEY")
+    or os.getenv("OPENAI_API_KEY")
+    or None
+)
+LLM_MODEL_NAME = os.getenv("LLM_MODEL_NAME", "llama-3.1-8b-instant")
+
+# Classification Configuration
+CLASSIFICATION_MATCH_FLOOR = float(os.getenv("CLASSIFICATION_MATCH_FLOOR", "0.5"))

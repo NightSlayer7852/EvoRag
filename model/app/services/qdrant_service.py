@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as qmodels
 
@@ -167,6 +167,32 @@ class QdrantService:
         }
         if superseded_by is not None:
             payload_updates["superseded_by"] = superseded_by
+
+        self.client.set_payload(
+            collection_name=target_collection,
+            payload=payload_updates,
+            points=[chunk_id]
+        )
+
+    def update_payload(
+        self,
+        chunk_id: str,
+        payload_updates: Dict[str, Any],
+        collection_name: Optional[str] = None
+    ) -> None:
+        """
+        Patches metadata payload fields of a specific chunk in Qdrant in-place. Automatically updates updated_at.
+
+        Args:
+            chunk_id (str): UUID string of target chunk.
+            payload_updates (dict): Payload key-value updates.
+            collection_name (str, optional): Target collection.
+        """
+        self.connect()
+        target_collection = collection_name or self.collection_name
+
+        if "updated_at" not in payload_updates:
+            payload_updates["updated_at"] = datetime.now(timezone.utc).isoformat()
 
         self.client.set_payload(
             collection_name=target_collection,
