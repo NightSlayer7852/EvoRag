@@ -10,6 +10,10 @@ env/
 .env
 .env.local
 
+# Database & Storage
+*.db
+*.sqlite3
+
 # Build & Logs
 dist/
 build/

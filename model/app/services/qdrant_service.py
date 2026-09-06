@@ -130,7 +130,6 @@ class QdrantService:
                 query_filter=query_filter
             )
         except Exception:
-            # Collection might not exist yet
             return []
 
         retrieved_chunks = []
@@ -200,6 +199,92 @@ class QdrantService:
             points=[chunk_id]
         )
 
+    def delete_chunk(self, chunk_id: str, collection_name: Optional[str] = None) -> None:
+        """
+        Deletes a point entirely from Qdrant by point chunk_id.
+
+        Args:
+            chunk_id (str): Target chunk ID to delete.
+            collection_name (str, optional): Target collection.
+        """
+        self.connect()
+        target_collection = collection_name or self.collection_name
+        try:
+            self.client.delete(
+                collection_name=target_collection,
+                points_selector=qmodels.PointIdsList(points=[chunk_id])
+            )
+        except Exception as e:
+            print(f"[QdrantService] Delete point error ({chunk_id}): {e}")
+
+    def list_all_chunks(self, status_filter: Optional[str] = None, collection_name: Optional[str] = None) -> List[RetrievedChunk]:
+        """
+        Scrolls through and retrieves all points stored in the target Qdrant collection.
+
+        Args:
+            status_filter (str, optional): Filter by payload status field.
+            collection_name (str, optional): Target collection.
+
+        Returns:
+            List[RetrievedChunk]: List of all retrieved points.
+        """
+        self.connect()
+        target_collection = collection_name or self.collection_name
+
+        query_filter = None
+        if status_filter:
+            query_filter = qmodels.Filter(
+                must=[
+                    qmodels.FieldCondition(
+                        key="status",
+                        match=qmodels.MatchValue(value=status_filter)
+                    )
+                ]
+            )
+
+        try:
+            points, _ = self.client.scroll(
+                collection_name=target_collection,
+                scroll_filter=query_filter,
+                limit=1000,
+                with_payload=True,
+                with_vectors=True
+            )
+        except Exception:
+            return []
+
+        chunks = []
+        for point in points:
+            metadata = ChunkMetadata(**(point.payload or {}))
+            chunks.append(RetrievedChunk(metadata=metadata, score=1.0))
+        return chunks
+
+    def get_version_chain(self, chunk_id: str, collection_name: Optional[str] = None) -> List[str]:
+        """
+        Traverses 'supersedes' pointers backward to build full version lineage chain.
+        Returns list of chunk IDs ordered from oldest ancestor to current chunk_id.
+
+        Args:
+            chunk_id (str): Starting chunk ID.
+
+        Returns:
+            List[str]: Ancestor chunk ID lineage chain.
+        """
+        chain = []
+        curr_id = chunk_id
+        visited = set()
+
+        while curr_id and curr_id not in visited:
+            visited.add(curr_id)
+            chain.append(curr_id)
+            retrieved = self.get_by_id(curr_id, collection_name=collection_name)
+            if not retrieved:
+                break
+            curr_id = retrieved.metadata.supersedes
+
+        chain.reverse()
+        return chain
+
     def get_by_id(self, chunk_id: str, collection_name: Optional[str] = None) -> Optional[RetrievedChunk]:
         """
         Fetches a single chunk point by its UUID chunk_id.
@@ -217,7 +302,9 @@ class QdrantService:
         try:
             records = self.client.retrieve(
                 collection_name=target_collection,
-                ids=[chunk_id]
+                ids=[chunk_id],
+                with_payload=True,
+                with_vectors=True
             )
             if not records:
                 return None
