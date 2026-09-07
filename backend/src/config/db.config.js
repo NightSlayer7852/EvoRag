@@ -1,5 +1,4 @@
-// Qdrant + Cold-storage DB connection configs
+// Configuration for external service connections
 module.exports = {
-  qdrantUrl: process.env.QDRANT_URL || 'http://localhost:6333',
-  coldStorageUri: process.env.COLD_STORAGE_URI || ''
+  modelServiceUrl: process.env.MODEL_SERVICE_URL || 'http://localhost:8000'
 };
