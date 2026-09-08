@@ -29,14 +29,22 @@ export default function Home() {
   }, []);
 
   const handleSubmit = async (queryText) => {
+    console.group(`[EvoRAG] 🔍 Query: "${queryText}"`);
+    console.time('[EvoRAG] Total query time');
     setIsLoading(true);
     setError(null);
     setAnswerResult(null);
 
     try {
       const result = await submitQuery(queryText);
+      console.log('[EvoRAG] ✅ Answer received:', result);
+      console.timeEnd('[EvoRAG] Total query time');
+      console.groupEnd();
       setAnswerResult(result);
     } catch (err) {
+      console.error('[EvoRAG] ❌ Query failed:', err.message);
+      console.timeEnd('[EvoRAG] Total query time');
+      console.groupEnd();
       setError(err.message || 'Failed to generate answer from EvoRAG service');
     } finally {
       setIsLoading(false);
@@ -44,13 +52,16 @@ export default function Home() {
   };
 
   const handleGcTrigger = async () => {
+    console.log('[EvoRAG] 🗑️ Triggering garbage collection...');
     setIsGcLoading(true);
     setGcError(null);
 
     try {
       const summary = await triggerGc();
+      console.log('[EvoRAG] ✅ GC completed:', summary);
       setGcSummary(summary);
     } catch (err) {
+      console.error('[EvoRAG] ❌ GC failed:', err.message);
       setGcError(err.message || 'Failed to execute garbage collection job');
     } finally {
       setIsGcLoading(false);

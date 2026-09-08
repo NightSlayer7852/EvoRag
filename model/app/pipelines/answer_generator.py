@@ -157,7 +157,7 @@ def generate_answer(
                 from langchain_groq import ChatGroq
                 llm = ChatGroq(
                     groq_api_key=LLM_API_KEY,
-                    model_name=LLM_MODEL_NAME,
+                    model=LLM_MODEL_NAME,
                     temperature=0.2
                 )
                 res = llm.invoke(prompt_text)
@@ -171,7 +171,7 @@ def generate_answer(
                 from langchain_openai import ChatOpenAI
                 llm = ChatOpenAI(
                     openai_api_key=LLM_API_KEY,
-                    model_name=LLM_MODEL_NAME,
+                    model=LLM_MODEL_NAME,
                     temperature=0.2
                 )
                 res = llm.invoke(prompt_text)

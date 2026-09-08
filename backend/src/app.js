@@ -6,13 +6,30 @@ const logger = require('./utils/logger');
 const app = express();
 
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || '*';
+const allowedOrigins = FRONTEND_ORIGIN.split(',').map(o => o.trim());
 
-app.use(cors({ origin: FRONTEND_ORIGIN }));
+app.use(cors({
+  origin: allowedOrigins.includes('*') ? '*' : allowedOrigins
+}));
 app.use(express.json());
 
-// Request logging middleware
+// Request logging middleware with response time tracking
 app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.originalUrl || req.url}`);
+  const start = Date.now();
+  const { method, originalUrl, url, body } = req;
+  const path = originalUrl || url;
+
+  if (method !== 'GET' && body && Object.keys(body).length) {
+    logger.debug(`${method} ${path} — body:`, JSON.stringify(body).slice(0, 200));
+  } else {
+    logger.info(`${method} ${path}`);
+  }
+
+  res.on('finish', () => {
+    const ms = Date.now() - start;
+    logger.http(method, path, res.statusCode, ms);
+  });
+
   next();
 });
 

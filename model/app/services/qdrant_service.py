@@ -7,6 +7,7 @@ from app.config import (
     QDRANT_HOST,
     QDRANT_PORT,
     QDRANT_URL,
+    QDRANT_CLUSTER_ENDPOINT,
     QDRANT_API_KEY,
     QDRANT_COLLECTION_NAME,
 )
@@ -26,17 +27,19 @@ class QdrantService:
     def connect(self) -> QdrantClient:
         """
         Initializes connection to Qdrant instance.
-        Attempts connecting using QDRANT_URL or QDRANT_HOST/PORT.
+        Attempts connecting using QDRANT_URL/QDRANT_CLUSTER_ENDPOINT or QDRANT_HOST/PORT.
         Falls back to in-memory mode (':memory:') if live instance is unreachable.
         """
         if self.client is not None:
             return self.client
 
+        target_url = QDRANT_URL or QDRANT_CLUSTER_ENDPOINT
+
         try:
-            if QDRANT_URL:
-                self.client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+            if target_url:
+                self.client = QdrantClient(url=target_url, api_key=QDRANT_API_KEY)
             else:
-                self.client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+                self.client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT, api_key=QDRANT_API_KEY)
             # Test connectivity
             self.client.get_collections()
             print("[QdrantService] Connected to external Qdrant instance.")
